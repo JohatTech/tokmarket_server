@@ -1,0 +1,12 @@
+﻿{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app/index.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{env/**,**/__pycache__/**,**/*.pyc}"
+    }
+  },
+  "crons": [
+    { "path": "/api/v1/catalog/refresh", "schedule": "0 0 * * *" }
+  ]
+}
