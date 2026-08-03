@@ -32,9 +32,16 @@ app = FastAPI(title="Toktrade API", version="1.0.0", lifespan=lifespan)
 
 @app.middleware("http")
 async def normalize_path_middleware(request: Request, call_next):
+    matched_path = request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri")
     path = request.scope.get("path", "")
+
+    if matched_path and path == "/api/index":
+        path = matched_path
+
     if "//" in path:
-        request.scope["path"] = "/" + "/".join(filter(None, path.split("/")))
+        path = "/" + "/".join(filter(None, path.split("/")))
+
+    request.scope["path"] = path
     return await call_next(request)
 
 
@@ -61,7 +68,22 @@ app.include_router(providers.router)
 app.include_router(market.router)
 
 
+@app.get("/")
+@app.get("/api/index")
+async def root():
+    return {
+        "status": "ok",
+        "service": "Toktrade API",
+        "endpoints": {
+            "catalog": "/api/v1/catalog",
+            "providers": "/api/v1/providers",
+            "market": "/api/v1/market/top-five",
+            "health": "/health",
+        },
+    }
+
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "catalog_updated_at": catalog_service.updated_at}
+    return {"status": "ok", "catalog_updated_at": catalog_service.updated_at}
+
