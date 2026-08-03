@@ -16,7 +16,10 @@ async def periodic_refresh(hours: int) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await catalog_service.refresh()
+    try:
+        await catalog_service.refresh()
+    except Exception:
+        pass
     task = None if os.getenv("VERCEL") else asyncio.create_task(periodic_refresh(get_settings().refresh_hours))
     yield
     if task:
@@ -36,13 +39,13 @@ async def normalize_path_middleware(request: Request, call_next):
 
 
 origins = settings.origins
-is_wildcard = "*" in origins
+is_wildcard = "*" in origins or not origins
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"] if is_wildcard else origins,
     allow_origin_regex=None if is_wildcard else r"https://.*\.vercel\.app",
-    allow_credentials=not is_wildcard,
+    allow_credentials=False if is_wildcard else True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
@@ -56,6 +59,7 @@ app.include_router(market.router, prefix="/api/v1")
 app.include_router(catalog.router)
 app.include_router(providers.router)
 app.include_router(market.router)
+
 
 
 @app.get("/health")
