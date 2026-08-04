@@ -7,7 +7,10 @@ router = APIRouter(prefix="/catalog", tags=["catalog"])
 
 @router.get("", response_model=CatalogResponse)
 async def get_catalog(q: str | None = None, provider: str | None = None, free_only: bool = Query(False)):
+    if not catalog_service.models:
+        await catalog_service.refresh()
     return catalog_service.catalog(q, provider, free_only)
+
 
 
 @router.post("/refresh", response_model=CatalogResponse)
