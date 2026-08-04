@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="TOKTRADE_")
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,https://tokmarket-front.vercel.app,*"
     refresh_hours: int = 24
 
     @property
