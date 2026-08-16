@@ -1,7 +1,7 @@
 import asyncio
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import catalog, market, providers
 from app.core.config import get_settings
@@ -28,21 +28,6 @@ async def lifespan(app: FastAPI):
 
 settings = get_settings()
 app = FastAPI(title="Toktrade API", version="1.0.0", lifespan=lifespan)
-
-
-@app.middleware("http")
-async def normalize_path_middleware(request: Request, call_next):
-    matched_path = request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri")
-    path = request.scope.get("path", "")
-
-    if matched_path and path == "/api/index":
-        path = matched_path
-
-    if "//" in path:
-        path = "/" + "/".join(filter(None, path.split("/")))
-
-    request.scope["path"] = path
-    return await call_next(request)
 
 
 origins = settings.origins
