@@ -34,15 +34,14 @@ app = FastAPI(title="Toktrade API", version="1.0.0", lifespan=lifespan)
 async def normalize_path_middleware(request: Request, call_next):
     raw_path = request.query_params.get("__path")
     matched_path = raw_path or request.headers.get("x-matched-path")
+
+    if matched_path:
+        request.scope["path"] = matched_path
+
     path = request.scope.get("path", "")
-
-    if matched_path and (path == "/api/index" or path == "/"):
-        path = matched_path
-
     if "//" in path:
-        path = "/" + "/".join(filter(None, path.split("/")))
+        request.scope["path"] = "/" + "/".join(filter(None, path.split("/")))
 
-    request.scope["path"] = path
     return await call_next(request)
 
 
