@@ -18,6 +18,8 @@ class ModelPrice(BaseModel):
     source_url: HttpUrl
     source_label: str
     observed_at: datetime
+    benchmark_source: str | None = None
+    benchmark_score: str | None = None
 
 
 class ProviderInfo(BaseModel):
